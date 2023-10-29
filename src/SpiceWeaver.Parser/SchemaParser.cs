@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Pidgin;
 using Pidgin.Comment;
 using static Pidgin.Parser;
@@ -11,24 +10,8 @@ namespace SpiceWeaver.Parser;
 
 public static class SchemaParser
 {
-    // Character sets
-    private static readonly Parser<char, char> _lowercaseOrDigit = Lowercase.Or(Digit);
-    private static readonly Parser<char, char> _lowercaseOrDigitOrUnderscore = _lowercaseOrDigit.Or(Char('_'));
-
-
-    private static readonly Parser<char, string> _identifier =
-        Tok(
-            Map(
-                    (first, rest) => first + rest,
-                    Lowercase,
-                    _lowercaseOrDigitOrUnderscore.ManyString()
-                )
-                // Easier to assert this than leaning on parsers to do it
-                .Assert(s => s.Length <= 64 && !s.EndsWith('_'))
-        );
-
     // Relations
-    private static readonly Parser<char, string> _relationName = _identifier.Labelled("relationName");
+    private static readonly Parser<char, string> _relationName = Identifier.Labelled("relationName");
 
     private static readonly Parser<char, string> _relationExpression =
         Tok(
@@ -36,7 +19,7 @@ public static class SchemaParser
                     (first, rest) => first + rest,
                     Lowercase,
                     OneOf(
-                            _lowercaseOrDigitOrUnderscore, Char('#'), Char(':'), Char('*'), Char('|'), Char(' ')
+                            Lowercase, Digit, Char('_'), Char('#'), Char(':'), Char('*'), Char('|'), Char(' ')
                         )
                         .ManyString()
                 )
@@ -44,7 +27,7 @@ public static class SchemaParser
             .Labelled("relationExpression");
 
     private static readonly Parser<char, Relation> _relation =
-        Tok("relation")
+        Keyword("relation")
             .Then(
                 Map(
                     (name, expression) => new Relation(name.Trim(), expression.Trim()),
@@ -55,21 +38,21 @@ public static class SchemaParser
             .Labelled("relation");
 
     // Permissions
-    private static readonly Parser<char, string> _permissionName = _identifier.Labelled("permissionName");
+    private static readonly Parser<char, string> _permissionName = Identifier.Labelled("permissionName");
 
     private static readonly Parser<char, string> _permissionExpression =
         Tok(Map(
                 (first, rest) => first + rest,
                 Lowercase,
                 OneOf(
-                        _lowercaseOrDigitOrUnderscore, Char('-'), Char('>'), Char('+'), Char(' '), Char('-'), Char('&')
+                        Lowercase, Digit, Char('_'), Char('-'), Char('>'), Char('+'), Char(' '), Char('-'), Char('&')
                     )
                     .ManyString()
             ))
             .Labelled("permissionExpression");
 
     private static readonly Parser<char, Permission> _permission =
-        Tok("permission")
+        Keyword("permission")
             .Then(
                 Map(
                     (name, expression) => new Permission(name.Trim(), expression.Trim()),
@@ -79,13 +62,13 @@ public static class SchemaParser
             );
 
     // Definitions
-    private static readonly Parser<char, string> _definitionName = _identifier.Labelled("definitionName");
+    private static readonly Parser<char, string> _definitionName = Identifier.Labelled("definitionName");
 
     private static readonly Parser<char, IDefinitionMember> _definitionMember =
         OneOf(_relation.Cast<IDefinitionMember>(), _permission.Cast<IDefinitionMember>());
 
     private static readonly Parser<char, Definition> _definition =
-        Tok("definition")
+        Keyword("definition")
             .Then(
                 Map(
                     (name, members) =>
