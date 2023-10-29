@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{63A00214
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiceWeaver.Tests", "tests\SpiceWeaver.Tests\SpiceWeaver.Tests.csproj", "{2A253607-CFA9-45E2-83E0-268526C092DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiceWeaver.Benchmarks", "src\SpiceWeaver.Benchmarks\SpiceWeaver.Benchmarks.csproj", "{F02A02DD-B748-4B99-ADA0-44B8B980F399}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,9 +50,22 @@ Global
 		{2A253607-CFA9-45E2-83E0-268526C092DF}.Release|x64.Build.0 = Release|Any CPU
 		{2A253607-CFA9-45E2-83E0-268526C092DF}.Release|x86.ActiveCfg = Release|Any CPU
 		{2A253607-CFA9-45E2-83E0-268526C092DF}.Release|x86.Build.0 = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|x64.Build.0 = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Debug|x86.Build.0 = Debug|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|x64.ActiveCfg = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|x64.Build.0 = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|x86.ActiveCfg = Release|Any CPU
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2056B09E-EA61-422B-A4EF-58CF4800341A} = {489F9577-B3F8-44CA-B2C5-6B5A2286EB80}
 		{2A253607-CFA9-45E2-83E0-268526C092DF} = {63A00214-658E-4622-86DB-B8CD3137D725}
+		{F02A02DD-B748-4B99-ADA0-44B8B980F399} = {489F9577-B3F8-44CA-B2C5-6B5A2286EB80}
 	EndGlobalSection
 EndGlobal
