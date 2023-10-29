@@ -12,7 +12,7 @@ public class SchemaParserTests
     {
         var result = SchemaParser.Parse(input);
 
-        result.Success.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     [Test]
@@ -45,7 +45,7 @@ public class SchemaParserTests
     {
         var result = SchemaParser.Parse(input);
 
-        result.Success.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     [TestCase("{}")]
@@ -237,7 +237,7 @@ public class SchemaParserTests
 
         var result = SchemaParser.Parse(input);
 
-        result.Value.Should().Be(expected);
+        result.Should().Be(expected);
     }
 
     [Test]
@@ -251,7 +251,7 @@ public class SchemaParserTests
 
         var result = SchemaParser.Parse(input);
 
-        result.Success.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     private static IEnumerable<TestCaseData> ValidIdentifiers => new[]
@@ -316,7 +316,7 @@ public class SchemaParserTests
 
         var result = SchemaParser.Parse(input);
 
-        result.Success.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     [TestCaseSource(nameof(InvalidIdentifiers))]
@@ -326,14 +326,14 @@ public class SchemaParserTests
 
         var result = SchemaParser.Parse(input);
 
-        result.Success.Should().BeFalse();
+        result.Should().BeNull();
     }
 
     private static void AssertEquivalent(string input, Schema expected)
     {
         var result = SchemaParser.Parse(input);
 
-        result.Value.Should().BeEquivalentTo(expected);
+        result.Should().BeEquivalentTo(expected);
     }
 
     private static Definition EmptyDefinition(string name) =>
