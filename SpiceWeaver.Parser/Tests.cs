@@ -2,7 +2,7 @@ using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace ZedParser;
+namespace SpiceWeaver.Parser;
 
 public class Tests
 {

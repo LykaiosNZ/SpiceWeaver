@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ZedParser;
+namespace SpiceWeaver.Parser;
 
 public class Schema : IEquatable<Schema>
 {

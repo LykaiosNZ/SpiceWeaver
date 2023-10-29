@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using Pidgin;
 using System.Linq;
+using Pidgin;
 using Pidgin.Comment;
 using static Pidgin.Parser;
 using static Pidgin.Parser<char>;
-using static ZedParser.Tokens;
+using static SpiceWeaver.Parser.Tokens;
 
-namespace ZedParser;
+namespace SpiceWeaver.Parser;
 
 public static class SchemaParser
 {

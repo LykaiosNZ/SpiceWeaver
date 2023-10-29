@@ -1,7 +1,7 @@
 ﻿using Pidgin;
 using static Pidgin.Parser;
 
-namespace ZedParser;
+namespace SpiceWeaver.Parser;
 
 public static class Tokens
 {
