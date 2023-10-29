@@ -1,5 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Pidgin;
 using Pidgin.Comment;
 using static Pidgin.Parser;
@@ -100,12 +105,67 @@ public static class SchemaParser
             )
             .ManyString();
 
-    public static Result<char, Schema> Parse(string input) =>
-        StripComments(input) switch
-        {
-            { Success: true } success => _schema.Parse(success.Value),
-            { } failed => failed.Cast<Schema>()
-        };
+    /// <summary>
+    /// Parses text representing a SpiceDB schema into a <see cref="Schema"/> instance
+    /// </summary>
+    /// <param name="input">Text to parse</param>
+    /// <returns>A <see cref="Schema"/> instance representing the schema if parsing was successful, otherwise null</returns>
+    public static Schema? Parse(string input) => TryParse(input, out var schema) ? schema : null;
 
-    private static Result<char, string> StripComments(string input) => _stripComments.Parse(input);
+    /// <summary>
+    /// Parses text representing a SpiceDB schema into a <see cref="Schema"/> instance
+    /// </summary>
+    /// <param name="input"><see cref="TextReader"/> instance to use as source for text to parse</param>
+    /// <returns>A <see cref="Schema"/> instance representing the schema if parsing was successful, otherwise null</returns>
+    public static Schema? Parse(TextReader input) => TryParse(input, out var schema) ? schema : null;
+
+    /// <summary>
+    /// Attempts to Parse text representing a SpiceDB schema into a <see cref="Schema"/> instance
+    /// </summary>
+    /// <param name="input">Text to parse</param>
+    /// <param name="schema">When this method returns, contains the schema instance if parsing was successful, otherwise null</param>
+    /// <returns>True if the input was successfully parsed, otherwise false</returns>
+    public static bool TryParse(string input, [NotNullWhen(true)] out Schema? schema)
+    {
+        if (_stripComments.TryParse(p => p.Parse(input), out string? stripped))
+        {
+            return _schema.TryParse(p => p.Parse(stripped), out schema);
+        }
+
+        schema = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to Parse text representing a SpiceDB schema into a <see cref="Schema"/> instance
+    /// </summary>
+    /// <param name="input"><see cref="TextReader"/> instance to use as source for text to parse</param>
+    /// <param name="schema">When this method returns, contains the schema instance if parsing was successful, otherwise null</param>
+    /// <returns>True if the input was successfully parsed, otherwise false</returns>
+    public static bool TryParse(TextReader input, [NotNullWhen(true)] out Schema? schema)
+    {
+        if (_stripComments.TryParse(p => p.Parse(input), out string? stripped))
+        {
+            return _schema.TryParse(p => p.Parse(stripped), out schema);
+        }
+
+        schema = default;
+        return false;
+    }
+
+    private static bool TryParse<TToken, T>(this Parser<TToken, T> parser,
+        Func<Parser<TToken, T>, Result<TToken, T>> parse, [NotNullWhen(true)] out T? output)
+        where T : notnull
+    {
+        var result = parse(parser);
+
+        if (!result.Success)
+        {
+            output = default;
+            return false;
+        }
+
+        output = result.Value;
+        return true;
+    }
 }
