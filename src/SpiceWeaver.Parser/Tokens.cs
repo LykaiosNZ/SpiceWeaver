@@ -3,7 +3,7 @@ using static Pidgin.Parser;
 
 namespace SpiceWeaver.Parser;
 
-public static class Tokens
+internal static class Tokens
 {
     public static readonly Parser<char, char> OpenBrace = Tok('{');
     public static readonly Parser<char, char> CloseBrace = Tok('}');

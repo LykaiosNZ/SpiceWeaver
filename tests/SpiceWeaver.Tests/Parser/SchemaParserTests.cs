@@ -1,10 +1,8 @@
-using System.Linq;
-using FluentAssertions;
-using NUnit.Framework;
+using SpiceWeaver.Parser;
 
-namespace SpiceWeaver.Parser;
+namespace SpiceWeaver.Tests.Parser;
 
-public class Tests
+public class SchemaParserTests
 {
     [TestCase("")]
     [TestCase(" ")]
