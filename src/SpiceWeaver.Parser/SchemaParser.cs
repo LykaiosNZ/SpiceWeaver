@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Pidgin;
 using Pidgin.Comment;
 using static Pidgin.Parser;
@@ -14,20 +15,32 @@ public static class SchemaParser
     private static readonly Parser<char, char> _lowercaseOrDigit = Lowercase.Or(Digit);
     private static readonly Parser<char, char> _lowercaseOrDigitOrUnderscore = _lowercaseOrDigit.Or(Char('_'));
 
-    private static readonly Parser<char, string> _identifier = Tok(_lowercaseOrDigitOrUnderscore.AtLeastOnceString());
+
+    private static readonly Parser<char, string> _identifier =
+        Tok(
+            Map(
+                    (first, rest) => first + rest,
+                    Lowercase,
+                    _lowercaseOrDigitOrUnderscore.ManyString()
+                )
+                // Easier to assert this than leaning on parsers to do it
+                .Assert(s => s.Length <= 64 && !s.EndsWith('_'))
+        );
 
     // Relations
     private static readonly Parser<char, string> _relationName = _identifier.Labelled("relationName");
 
     private static readonly Parser<char, string> _relationExpression =
-        Tok(Map(
-                (first, rest) => first + rest,
-                Lowercase,
-                OneOf(
-                        _lowercaseOrDigitOrUnderscore, Char('#'), Char(':'), Char('*'), Char('|'), Char(' ')
-                    )
-                    .ManyString()
-            ))
+        Tok(
+                Map(
+                    (first, rest) => first + rest,
+                    Lowercase,
+                    OneOf(
+                            _lowercaseOrDigitOrUnderscore, Char('#'), Char(':'), Char('*'), Char('|'), Char(' ')
+                        )
+                        .ManyString()
+                )
+            )
             .Labelled("relationExpression");
 
     private static readonly Parser<char, Relation> _relation =
@@ -69,7 +82,7 @@ public static class SchemaParser
     private static readonly Parser<char, string> _definitionName = _identifier.Labelled("definitionName");
 
     private static readonly Parser<char, IDefinitionMember> _definitionMember =
-        OneOf(_relation.Cast<IDefinitionMember>(), _permission.Cast<IDefinitionMember>()).Before(SkipWhitespaces);
+        OneOf(_relation.Cast<IDefinitionMember>(), _permission.Cast<IDefinitionMember>());
 
     private static readonly Parser<char, Definition> _definition =
         Tok("definition")
@@ -84,7 +97,7 @@ public static class SchemaParser
                             definitionMembers.OfType<Permission>());
                     },
                     _definitionName.Before(OpenBrace),
-                    _definitionMember.Many().Before(CloseBrace)
+                    _definitionMember.Separated(SkipWhitespaces).Before(CloseBrace)
                 )
             )
             .Before(SkipWhitespaces);
