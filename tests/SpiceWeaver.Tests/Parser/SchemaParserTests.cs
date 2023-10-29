@@ -37,10 +37,10 @@ public class SchemaParserTests
         AssertEquivalent(input, expected);
     }
 
-    [TestCase("definition {}", TestName = "MissingName")]
-    [TestCase("defin!ition foo {}", TestName = "MisspelledKeyword")]
-    [TestCase("definition foo { definition bar {} }", TestName = "NestedDefinition")]
-    [TestCase("definition document { foo permission }", TestName = "UnknownKeywordInBody")]
+    [TestCase("definition {}", TestName = "{m}_MissingName")]
+    [TestCase("defin!ition foo {}", TestName = "{m}_MisspelledKeyword")]
+    [TestCase("definition foo { definition bar {} }", TestName = "{m}_NestedDefinition")]
+    [TestCase("definition document { foo permission }", TestName = "{m}_UnknownKeywordInBody")]
     public void MalformedDefinition(string input)
     {
         var result = SchemaParser.Parse(input);
@@ -225,7 +225,7 @@ public class SchemaParserTests
     {
         var input = """
                     definition organization {}
-                    
+
                     // A definition
                     definition document { /*  block comment */ } // A comment at the end of the line
                     """;
@@ -234,7 +234,7 @@ public class SchemaParserTests
         {
             EmptyDefinition("organization"), EmptyDefinition("document")
         });
-            
+
         var result = SchemaParser.Parse(input);
 
         result.Value.Should().Be(expected);
@@ -254,13 +254,88 @@ public class SchemaParserTests
         result.Success.Should().BeFalse();
     }
 
+    private static IEnumerable<TestCaseData> ValidIdentifiers => new[]
+    {
+        new TestCaseData("a").SetName("{m}_SingleLowercase"),
+        new TestCaseData("abc").SetName("{m}_MultipleLowercase"),
+        new TestCaseData("a_c").SetName("{m}_ContainsUnderscore"),
+        new TestCaseData("a1c").SetName("{m}_ContainsDigit"),
+        new TestCaseData("ab1").SetName("{m}_EndsWithDigit"),
+        new TestCaseData(string.Join("", Enumerable.Repeat("a", 64))).SetName("{m}_MaximumValidLength")
+    };
+
+    [TestCaseSource(nameof(ValidIdentifiers))]
+    public void ValidRelationName(string identifier)
+    {
+        var input = $"definition document {{ relation {identifier}: foo }}";
+
+        var expected = new Schema(new[]
+        {
+            new Definition("document", new[]
+            {
+                new Relation(identifier, "foo")
+            }, Enumerable.Empty<Permission>())
+        });
+
+        AssertEquivalent(input, expected);
+    }
+
+    [TestCaseSource(nameof(ValidIdentifiers))]
+    public void ValidPermissionName(string identifier)
+    {
+        var input = $"definition document {{ permission {identifier} = foo }}";
+
+        var expected = new Schema(new[]
+        {
+            new Definition("document", Enumerable.Empty<Relation>(), new[]
+            {
+                new Permission(identifier, "foo")
+            })
+        });
+
+        AssertEquivalent(input, expected);
+    }
+
+    private static IEnumerable<TestCaseData> InvalidIdentifiers => new[]
+    {
+        new TestCaseData("aBc").SetName("{m}_ContainsUppercase"),
+        new TestCaseData("1a").SetName("{m}_StartsWithDigit"),
+        new TestCaseData("_a").SetName("{m}_StartsWithUnderscore"),
+        new TestCaseData("a_").SetName("{m}_EndsWithUnderscore"),
+        new TestCaseData("a c").SetName("{m}_ContainsWhiteSpace"),
+        new TestCaseData("!bc").SetName("{m}_StartsWithInvalidChar"),
+        new TestCaseData("a!c").SetName("{m}_ContainsInvalidChar"),
+        new TestCaseData("ab!").SetName("{m}_EndsWithInvalidChar"),
+        new TestCaseData(string.Join("", Enumerable.Repeat("a", 65))).SetName("{m}_GreaterThan64Chars")
+    };
+
+    [TestCaseSource(nameof(InvalidIdentifiers))]
+    public void InvalidRelationName(string name)
+    {
+        var input = $"definition document {{ relation {name}: foo }}";
+
+        var result = SchemaParser.Parse(input);
+
+        result.Success.Should().BeFalse();
+    }
+
+    [TestCaseSource(nameof(InvalidIdentifiers))]
+    public void InvalidPermissionName(string name)
+    {
+        var input = $"definition document {{ permission {name} = foo }}";
+
+        var result = SchemaParser.Parse(input);
+
+        result.Success.Should().BeFalse();
+    }
+
     private static void AssertEquivalent(string input, Schema expected)
     {
         var result = SchemaParser.Parse(input);
 
         result.Value.Should().BeEquivalentTo(expected);
     }
-    
+
     private static Definition EmptyDefinition(string name) =>
         new(name, Enumerable.Empty<Relation>(), Enumerable.Empty<Permission>());
 }
