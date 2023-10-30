@@ -223,11 +223,16 @@ public class SchemaParserTests
     [Test]
     public void IgnoresComments()
     {
+        // TODO: Split into multiple tests, or add tests specifically for the SkipWhiteSpaceOrComments parser
         var input = """
                     definition organization {}
 
                     // A definition
-                    definition document { /*  block comment */ } // A comment at the end of the line
+                    definition document { /*  block comment */ /* Another block comment *//* A block comment touching */ } // A comment at the end of the line
+                    
+                    /* A block comment
+                            with line breaks 
+                                              */
                     """;
 
         var expected = new Schema(new[]
