@@ -1,3 +1,4 @@
+using FluentAssertions.Execution;
 using SpiceWeaver.Parser;
 
 namespace SpiceWeaver.Tests.Parser;
@@ -243,8 +244,7 @@ public class SchemaParserTests
                     definition document { }
                     """;
 
-        AssertFailure(input,
-            "Parse error.\r\n    unexpected EOF\r\n    expected block comment\r\n    at line 3, col 24", 24, 3);
+        AssertFailure(input, "EOF", "block comment", 3, 24);
     }
 
     private static IEnumerable<TestCaseData> ValidIdentifiers => new[]
@@ -326,13 +326,18 @@ public class SchemaParserTests
         result.WasSuccessful.Should().BeFalse();
     }
 
-    private static void AssertFailure(string input, string message, int column, int line)
+    private static void AssertFailure(string input, string unexpected, string expected, int line, int column)
     {
         var result = SchemaParser.Parse(input);
 
-        var expectedResult = ParseResult.Failure(message, column, line);
+        var message =
+            $"Parse error.\n    unexpected {unexpected}\r\n    expected {expected}\r\n    at line {line}, col {column}";
 
-        result.Should().BeEquivalentTo(expectedResult);
+        using var _ = new AssertionScope();
+        result.WasSuccessful.Should().BeFalse();
+        result.Error!.Message.Should().MatchEquivalentOf(message);
+        result.Error.Line.Should().Be(line);
+        result.Error.Column.Should().Be(column);
     }
 
     private static Definition EmptyDefinition(string name) =>
