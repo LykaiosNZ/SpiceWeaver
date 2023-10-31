@@ -134,9 +134,7 @@ public static class SchemaParser
             { Success: true } => ParseResult.Success(result.Value),
             _ => ParseResult.Failure(
                 result.Error!.RenderErrorMessage(),
-                result.Error.ErrorPos.Col,
-                result.Error.ErrorPos.Line
-            )
+                result.Error.ErrorPos.Line, result.Error.ErrorPos.Col)
         };
     }
 
