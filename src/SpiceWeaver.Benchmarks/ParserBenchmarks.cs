@@ -212,5 +212,5 @@ public class ParserBenchmarks
                                             """;
     
     [Benchmark]
-    public void Parse() => SchemaParser.Parse(GoogleIAMExample);
+    public ParseResult Parse() => SchemaParser.Parse(GoogleIAMExample);
 }
