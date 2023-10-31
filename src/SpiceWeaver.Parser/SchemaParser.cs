@@ -17,12 +17,13 @@ public static class SchemaParser
     private static readonly Parser<char, string> _relationExpression =
         Tok(
                 Map(
-                    (first, rest) => first + rest,
+                    (first, rest, _) => first + rest,
                     Lowercase,
                     OneOf(
                             Lowercase, Digit, Char('_'), Char('#'), Char(':'), Char('*'), Char('|'), Char(' ')
                         )
-                        .ManyString()
+                        .ManyString(),
+                    StatementTerminator
                 )
             )
             .Labelled("relationExpression");
@@ -43,12 +44,13 @@ public static class SchemaParser
 
     private static readonly Parser<char, string> _permissionExpression =
         Tok(Map(
-                (first, rest) => first + rest,
+                (first, rest, _) => first + rest,
                 Lowercase,
                 OneOf(
                         Lowercase, Digit, Char('_'), Char('-'), Char('>'), Char('+'), Char(' '), Char('-'), Char('&')
                     )
-                    .ManyString()
+                    .ManyString(),
+                StatementTerminator
             ))
             .Labelled("permissionExpression");
 
