@@ -310,6 +310,60 @@ public class SchemaParserTests
     public void InvalidPermissionName(string name) =>
         AssertFailure("$\"definition document {{ permission {name} = foo }}\";");
 
+    private static IEnumerable<char?> StatementTerminators => new char?[] { ' ', '\r', '\n', ';', null };
+
+    [TestCaseSource(nameof(StatementTerminators))]
+    public void RelationStatementTerminators(char? terminator)
+    {
+        var input = $"definition document {{ relation viewer: user{terminator}}}";
+
+        var expected = new Schema(new[]
+        {
+            new Definition("document", new[]
+            {
+                new Relation("viewer", "user")
+            }, Enumerable.Empty<Permission>())
+        });
+
+        AssertEquivalent(input, expected);
+    }
+
+    [TestCaseSource(nameof(StatementTerminators))]
+    public void PermissionStatementTerminators(char? terminator)
+    {
+        var input = $"definition document {{ permission view = viewer{terminator}}}";
+
+        var expected = new Schema(new[]
+        {
+            new Definition("document", Enumerable.Empty<Relation>(), new[]
+            {
+                new Permission("view", "viewer")
+            })
+        });
+
+        AssertEquivalent(input, expected);
+    }
+
+    [Test]
+    public void MultipleStatementsOnSingleLine()
+    {
+        var input = $"definition document {{ relation foo: bar; permission foo = bar; relation foo: bar }}";
+
+        var expected = new Schema(new[]
+        {
+            new Definition("document", new[]
+            {
+                new Relation("foo", "bar"), new Relation("foo", "bar")
+            }, new[]
+            {
+                new Permission("foo", "bar")
+            })
+        });
+        
+        AssertEquivalent(input, expected);
+    }
+
+
     private static void AssertEquivalent(string input, Schema expected)
     {
         var result = SchemaParser.Parse(input);

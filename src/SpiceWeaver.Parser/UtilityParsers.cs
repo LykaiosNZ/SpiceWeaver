@@ -11,6 +11,18 @@ internal static class UtilityParsers
     public static readonly Parser<char, char> Colon = Tok(':');
     public static readonly Parser<char, char> Equal = Tok('=');
 
+    public static readonly Parser<char, Unit> StatementTerminator = Tok(
+        OneOf(
+            Whitespace.IgnoreResult(),
+            Char(';').IgnoreResult(),
+            Lookahead((OneOf(
+                Try(Char('}').IgnoreResult()),
+                Try(String("//").IgnoreResult()),
+                Try(String("/*").IgnoreResult())
+            )))
+        )
+    );
+
     public static readonly Parser<char, string> Identifier =
         Tok(
             Map(
