@@ -347,22 +347,31 @@ public class SchemaParserTests
     [Test]
     public void MultipleStatementsOnSingleLine()
     {
-        var input = $"definition document {{ relation foo: bar; permission foo = bar; relation foo: bar }}";
+        var input =
+            "definition document { relation viewer: user; relation organization: organization; permission view = viewer; }";
 
         var expected = new Schema(new[]
         {
             new Definition("document", new[]
             {
-                new Relation("foo", "bar"), new Relation("foo", "bar")
+                new Relation("viewer", "user"), new Relation("organization", "organization")
             }, new[]
             {
-                new Permission("foo", "bar")
+                new Permission("view", "viewer")
             })
         });
-        
+
         AssertEquivalent(input, expected);
     }
 
+    [Test]
+    public void SingleSlashDoesNotTerminateStatement()
+    {
+        // Ensuring that comment termination works correctly and only // and /* can terminate the statement
+        var input = "definition document { relation viewer: user / permission view = viewer }";
+
+        AssertFailure(input);
+    }
 
     private static void AssertEquivalent(string input, Schema expected)
     {
