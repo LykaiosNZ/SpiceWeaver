@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Pidgin;
-using Pidgin.Comment;
 using static Pidgin.Parser;
-using static Pidgin.Parser<char>;
 using static SpiceWeaver.Parser.UtilityParsers;
 
 namespace SpiceWeaver.Parser;
@@ -100,14 +96,14 @@ public static class SchemaParser
     /// </summary>
     /// <param name="input">Text to parse</param>
     /// <returns>A <see cref="Schema"/> instance representing the schema if parsing was successful, otherwise null</returns>
-    public static Schema? Parse(string input) => TryParse(input, out var schema) ? schema : null;
+    public static ParseResult Parse(string input) => _schema.Parse(p => p.Parse(input));
 
     /// <summary>
     /// Parses text representing a SpiceDB schema into a <see cref="Schema"/> instance
     /// </summary>
     /// <param name="input"><see cref="TextReader"/> instance to use as source for text to parse</param>
     /// <returns>A <see cref="Schema"/> instance representing the schema if parsing was successful, otherwise null</returns>
-    public static Schema? Parse(TextReader input) => TryParse(input, out var schema) ? schema : null;
+    public static ParseResult Parse(TextReader input) => _schema.Parse(p => p.Parse(input));
 
     /// <summary>
     /// Attempts to Parse text representing a SpiceDB schema into a <see cref="Schema"/> instance
@@ -127,11 +123,28 @@ public static class SchemaParser
     public static bool TryParse(TextReader input, [NotNullWhen(true)] out Schema? schema) =>
         _schema.TryParse(p => p.Parse(input), out schema);
 
+
+    private static ParseResult Parse<TToken>(this Parser<TToken, Schema> parser,
+        Func<Parser<TToken, Schema>, Result<TToken, Schema>> parseFunc)
+    {
+        var result = parseFunc(parser);
+
+        return result switch
+        {
+            { Success: true } => ParseResult.Success(result.Value),
+            _ => ParseResult.Failure(
+                result.Error!.RenderErrorMessage(),
+                result.Error.ErrorPos.Col,
+                result.Error.ErrorPos.Line
+            )
+        };
+    }
+
     private static bool TryParse<TToken, T>(this Parser<TToken, T> parser,
-        Func<Parser<TToken, T>, Result<TToken, T>> parse, [NotNullWhen(true)] out T? output)
+        Func<Parser<TToken, T>, Result<TToken, T>> parseFunc, [NotNullWhen(true)] out T? output)
         where T : notnull
     {
-        var result = parse(parser);
+        var result = parseFunc(parser);
 
         if (!result.Success)
         {

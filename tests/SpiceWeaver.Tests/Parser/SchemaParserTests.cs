@@ -8,12 +8,7 @@ public class SchemaParserTests
     [TestCase(" ")]
     [TestCase("\t")]
     [TestCase("\r\n")]
-    public void EmptySchema(string input)
-    {
-        var result = SchemaParser.Parse(input);
-
-        result.Should().BeNull();
-    }
+    public void EmptySchema(string input) => AssertFailure(input);
 
     [Test]
     public void SingleDefinition()
@@ -41,12 +36,7 @@ public class SchemaParserTests
     [TestCase("defin!ition foo {}", TestName = "{m}_MisspelledKeyword")]
     [TestCase("definition foo { definition bar {} }", TestName = "{m}_NestedDefinition")]
     [TestCase("definition document { foo permission }", TestName = "{m}_UnknownKeywordInBody")]
-    public void MalformedDefinition(string input)
-    {
-        var result = SchemaParser.Parse(input);
-
-        result.Should().BeNull();
-    }
+    public void MalformedDefinition(string input) => AssertFailure(input);
 
     [TestCase("{}")]
     [TestCase("{   }")]
@@ -228,21 +218,20 @@ public class SchemaParserTests
                     definition organization {}
 
                     // A definition
-                    definition document { /*  block comment */ /* Another block comment *//* A block comment touching */ } // A comment at the end of the line
-                    
+                    definition document { /*  block comment */ permission view = viewer /* Another block comment *//* A block comment touching */ } // A comment at the end of the line
+
                     /* A block comment
-                            with line breaks 
+                            with line breaks
                                               */
                     """;
 
         var expected = new Schema(new[]
         {
-            EmptyDefinition("organization"), EmptyDefinition("document")
+            EmptyDefinition("organization"),
+            new Definition("document", Enumerable.Empty<Relation>(), new[] { new Permission("view", "viewer") })
         });
 
-        var result = SchemaParser.Parse(input);
-
-        result.Should().Be(expected);
+        AssertEquivalent(input, expected);
     }
 
     [Test]
@@ -254,9 +243,8 @@ public class SchemaParserTests
                     definition document { }
                     """;
 
-        var result = SchemaParser.Parse(input);
-
-        result.Should().BeNull();
+        AssertFailure(input,
+            "Parse error.\r\n    unexpected EOF\r\n    expected block comment\r\n    at line 3, col 24", 24, 3);
     }
 
     private static IEnumerable<TestCaseData> ValidIdentifiers => new[]
@@ -315,30 +303,36 @@ public class SchemaParserTests
     };
 
     [TestCaseSource(nameof(InvalidIdentifiers))]
-    public void InvalidRelationName(string name)
-    {
-        var input = $"definition document {{ relation {name}: foo }}";
+    public void InvalidRelationName(string name) => AssertFailure("definition document {{ relation {name}: foo }}");
 
-        var result = SchemaParser.Parse(input);
-
-        result.Should().BeNull();
-    }
 
     [TestCaseSource(nameof(InvalidIdentifiers))]
-    public void InvalidPermissionName(string name)
-    {
-        var input = $"definition document {{ permission {name} = foo }}";
-
-        var result = SchemaParser.Parse(input);
-
-        result.Should().BeNull();
-    }
+    public void InvalidPermissionName(string name) =>
+        AssertFailure("$\"definition document {{ permission {name} = foo }}\";");
 
     private static void AssertEquivalent(string input, Schema expected)
     {
         var result = SchemaParser.Parse(input);
 
-        result.Should().BeEquivalentTo(expected);
+        var expectedResult = ParseResult.Success(expected);
+
+        result.Should().BeEquivalentTo(expectedResult);
+    }
+
+    private static void AssertFailure(string input)
+    {
+        var result = SchemaParser.Parse(input);
+
+        result.WasSuccessful.Should().BeFalse();
+    }
+
+    private static void AssertFailure(string input, string message, int column, int line)
+    {
+        var result = SchemaParser.Parse(input);
+
+        var expectedResult = ParseResult.Failure(message, column, line);
+
+        result.Should().BeEquivalentTo(expectedResult);
     }
 
     private static Definition EmptyDefinition(string name) =>
