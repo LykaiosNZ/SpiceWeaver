@@ -15,11 +15,14 @@ internal static class UtilityParsers
         OneOf(
             Whitespace.IgnoreResult(),
             Char(';').IgnoreResult(),
-            Lookahead((OneOf(
-                Try(Char('}').IgnoreResult()),
-                Try(String("//").IgnoreResult()),
-                Try(String("/*").IgnoreResult())
-            )))
+            Lookahead(
+                OneOf(
+                    Try(Char('}').IgnoreResult()),
+                    Try(String("//").IgnoreResult()),
+                    // Need to find out if block comments are allowed within statements
+                    Try(String("/*").IgnoreResult())
+                )
+            )
         )
     );
 
