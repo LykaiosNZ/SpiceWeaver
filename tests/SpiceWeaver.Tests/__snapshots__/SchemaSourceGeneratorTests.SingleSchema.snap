@@ -1,0 +1,29 @@
+﻿namespace SpiceWeaver
+{
+    public static class Schema
+    {
+        public static class Definitions
+        {
+            public static class User
+            {
+                public const string Name = "user";
+            }
+
+            public static class Document
+            {
+                public const string Name = "document";
+                public static class Relations
+                {
+                    public const string Viewer = "viewer";
+                    public const string Editor = "editor";
+                }
+
+                public static class Permissions
+                {
+                    public const string View = "view";
+                    public const string Edit = "edit";
+                }
+            }
+        }
+    }
+}

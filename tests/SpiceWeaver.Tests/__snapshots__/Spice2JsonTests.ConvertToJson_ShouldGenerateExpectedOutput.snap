@@ -1,0 +1,55 @@
+﻿{
+  "definitions": [
+    {
+      "name": "user"
+    },
+    {
+      "name": "document",
+      "relations": [
+        {
+          "name": "viewer",
+          "types": [
+            {
+              "type": "user"
+            }
+          ]
+        },
+        {
+          "name": "editor",
+          "types": [
+            {
+              "type": "user"
+            }
+          ]
+        }
+      ],
+      "permissions": [
+        {
+          "name": "view",
+          "userSet": {
+            "operation": "union",
+            "children": [
+              {
+                "relation": "viewer"
+              },
+              {
+                "relation": "editor"
+              }
+            ]
+          }
+        },
+        {
+          "name": "edit",
+          "userSet": {
+            "operation": "union",
+            "children": [
+              {
+                "relation": "editor"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

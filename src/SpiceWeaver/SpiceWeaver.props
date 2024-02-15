@@ -1,0 +1,9 @@
+﻿<Project>
+    <ItemGroup>
+        <CompilerVisibleProperty Include="SpiceWeaver_Spice2JsonPath" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpiceWeaver_SchemaFile" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpiceWeaver_IsJson" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpiceWeaver_Namespace" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpiceWeaver_ClassName" />
+    </ItemGroup>
+</Project>
