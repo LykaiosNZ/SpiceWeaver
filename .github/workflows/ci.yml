@@ -24,6 +24,6 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v4
     - name: Install spice2json
-      run: go install github.com/alsbury/spice2json
+      run: go install github.com/alsbury/spice2json@latest
     - name: Test
       run: dotnet test --no-build --verbosity normal
