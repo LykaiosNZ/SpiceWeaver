@@ -9,9 +9,13 @@
         <IsRoslynComponent>true</IsRoslynComponent>
 
         <RootNamespace>SpiceWeaver</RootNamespace>
-        
-        <Authors>Ben Simpson</Authors>
+
         <PackageId>SpiceWeaver</PackageId>
+        <Authors>Ben Simpson</Authors>
+        <Description>A Source Generator for SpiceDB Schema Files</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/LykaiosNZ/SpiceWeaver</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/LykaiosNZ/SpiceWeaver</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         
