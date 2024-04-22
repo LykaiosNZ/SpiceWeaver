@@ -30,4 +30,5 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal -c Release
       - name: Publish
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: dotnet nuget push src/SpiceWeaver/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
