@@ -9,14 +9,20 @@
         <IsRoslynComponent>true</IsRoslynComponent>
 
         <RootNamespace>SpiceWeaver</RootNamespace>
+        
+        <Authors>Ben Simpson</Authors>
         <PackageId>SpiceWeaver</PackageId>
-
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        
+        <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="GitVersion.MsBuild" Version="5.12.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
