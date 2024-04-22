@@ -28,6 +28,6 @@ jobs:
       - name: Install spice2json
         run: go install github.com/alsbury/spice2json@latest
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal -c Release
       - name: Publish
         run: dotnet nuget push src/SpiceWeaver/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }}
