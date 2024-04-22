@@ -12,18 +12,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore .NET dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Setup Go
-      uses: actions/setup-go@v4
-    - name: Install spice2json
-      run: go install github.com/alsbury/spice2json@latest
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore .NET dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore -c Release
+      - name: Setup Go
+        uses: actions/setup-go@v5
+      - name: Install spice2json
+        run: go install github.com/alsbury/spice2json@latest
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      - name: Publish
+        run: dotnet nuget push src/SpiceWeaver/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }}
