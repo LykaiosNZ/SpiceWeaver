@@ -18,6 +18,7 @@
         <PackageProjectUrl>https://github.com/LykaiosNZ/SpiceWeaver</PackageProjectUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         
         <IncludeBuildOutput>false</IncludeBuildOutput>
     </PropertyGroup>
@@ -44,5 +45,7 @@
 
         <!-- Package the Newtonsoft.Json dependency alongside the generator assembly -->
         <None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>
