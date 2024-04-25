@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Install GitVersion
+      - name: Setup GitVersion
         uses: gittools/actions/gitversion/setup@v0
         with:
           versionSpec: '5.x'
@@ -43,7 +43,8 @@ jobs:
             -p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
             -p:FileVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
             -p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
-      - uses: supplypike/setup-bin@v4
+      - name: Setup spice2json
+        uses: supplypike/setup-bin@v4
         with:
           uri: 'https://github.com/alsbury/spice2json/releases/download/v${{ env.SPICE2JSON_VERSION }}/spice2json-v${{ env.SPICE2JSON_VERSION }}-linux-amd64.tar.gz'
           name: 'spice2json'
