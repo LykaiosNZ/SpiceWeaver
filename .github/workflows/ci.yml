@@ -1,6 +1,8 @@
 name: ci
 
 on:
+  release:
+    types: [ created ]
   push:
     branches: [ "main" ]
   pull_request:
@@ -19,10 +21,24 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
       - name: Restore .NET dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: |
+          dotnet build --no-restore -c Release \
+            -p:PackageVersion=${{ steps.gitversion.outputs.NuGetVersionV2 }} \
+            -p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+            -p:FileVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
+            -p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
       - name: Setup Go
         uses: actions/setup-go@v5
       - name: Install spice2json
@@ -30,5 +46,5 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal -c Release
       - name: Publish
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: dotnet nuget push src/SpiceWeaver/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+        if: github.event_name == 'release' && github.event.action == 'created'
+        run: dotnet nuget push src/SpiceWeaver/bin/Release/${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
