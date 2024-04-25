@@ -12,6 +12,10 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    
+    env:
+      CONFIGURATION: Release
+      SPICE2JSON_VERSION: 0.3.4
 
     steps:
       - uses: actions/checkout@v4
@@ -34,17 +38,18 @@ jobs:
         run: dotnet restore
       - name: Build
         run: |
-          dotnet build --no-restore -c Release \
+          dotnet build --no-restore -c ${{ env.CONFIGURATION }} \
             -p:PackageVersion=${{ steps.gitversion.outputs.NuGetVersionV2 }} \
             -p:AssemblyVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
             -p:FileVersion=${{ steps.gitversion.outputs.assemblySemVer }} \
             -p:InformationalVersion=${{ steps.gitversion.outputs.informationalVersion }}
-      - name: Setup Go
-        uses: actions/setup-go@v5
-      - name: Install spice2json
-        run: go install github.com/alsbury/spice2json@latest
+      - uses: supplypike/setup-bin@v4
+        with:
+          uri: 'https://github.com/alsbury/spice2json/releases/download/v${{ env.SPICE2JSON_VERSION }}/spice2json-v${{ env.SPICE2JSON_VERSION }}-linux-amd64.tar.gz'
+          name: 'spice2json'
+          version: '${{ env.SPICE2JSON_VERSION }}'
       - name: Test
-        run: dotnet test --no-build --verbosity normal -c Release
+        run: dotnet test --no-build --verbosity normal -c ${{ env.CONFIGURATION }}
       - name: Publish
         if: github.event_name == 'release' && github.event.action == 'created'
         run: dotnet nuget push src/SpiceWeaver/bin/Release/${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
