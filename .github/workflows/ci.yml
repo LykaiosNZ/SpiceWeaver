@@ -54,10 +54,10 @@ jobs:
         run: dotnet test --no-build --verbosity normal -c ${{ env.CONFIGURATION }}
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/v')
-        run: dotnet nuget push src/SpiceWeaver/bin/Release/${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push src/SpiceWeaver/bin/Release/SpiceWeaver.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg --api-key ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
       - name: Create Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            src/SpiceWeaver/bin/Release/${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg
+            src/SpiceWeaver/bin/Release/SpiceWeaver.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg
