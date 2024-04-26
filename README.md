@@ -7,7 +7,6 @@ SpiceWeaver is a .NET Source Generator for [SpiceDB](https://github.com/authzed/
 Add SpiceWeaver to your `.csproj` file:
 
 ```xml
-
 <ItemGroup>
     <PackageReference Include="SpiceWeaver" Version="0.1.0" PrivateAssets="all"/>
 </ItemGroup>
@@ -21,7 +20,6 @@ installed.
 Add your SpiceDB schema to your `.csproj` file as an Additional File and flag it as a schema file:
 
 ```xml
-
 <ItemGroup>
     <AdditionalFiles Include="schema.zed" SpiceWeaver_SchemaFile="true"/>
 </ItemGroup>
@@ -33,7 +31,6 @@ If your schema has already been converted to a json file using **spice2json**, y
 Generator using the `IsJson`file option:
 
 ```xml
-
 <ItemGroup>
     <AdditionalFiles Include="schema.json" SpiceWeaver_SchemaFile="true" SpiceWeaver_IsJson="true"/>
 </ItemGroup>
@@ -69,11 +66,13 @@ namespace SpiceWeaver
             public static class User
             {
                 public const string Name = "user";
+                public static string WithId(string id) => $"user:{id}";
             }
 
             public static class Document
             {
                 public const string Name = "document";
+                public static string WithId(string id) => $"document:{id}";
                 public static class Relations
                 {
                     public const string Viewer = "viewer";
@@ -105,7 +104,6 @@ Global options are set in the `.csproj` file directly in a `PropertyGroup` and t
 schema files
 
 ```xml
-
 <PropertyGroup>
     <SpiceWeaver_Spice2JsonPath>path/to/spice2json</SpiceWeaver_Spice2JsonPath>
 </PropertyGroup>
@@ -123,7 +121,6 @@ schema files
 File options are per-file and are set on individual `AdditionalFiles` items
 
 ```xml
-
 <ItemGroup>
     <AdditionalFiles Include="schema.zed" SpiceWeaver_SchemaFile="true" SpiceWeaver_Namespace="MyNamespace"/>
 </ItemGroup>
