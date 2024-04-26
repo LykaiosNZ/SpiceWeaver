@@ -7,13 +7,15 @@
             public static class User
             {
                 public const string Name = "user";
-                public static string WithId(string id) => $"user:{id}";
+                public const string? Namespace = null;
+                public static string WithId(string id, bool includeNamespace = false) => $"user:{id}";
             }
 
             public static class Document
             {
                 public const string Name = "document";
-                public static string WithId(string id) => $"document:{id}";
+                public const string? Namespace = null;
+                public static string WithId(string id, bool includeNamespace = false) => $"document:{id}";
                 public static class Relations
                 {
                     public const string Viewer = "viewer";

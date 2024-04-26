@@ -1,21 +1,21 @@
-﻿namespace SpiceWeaver
+﻿namespace TestNameSpace
 {
-    public static class Schema
+    public static class TestSchema
     {
         public static class Definitions
         {
             public static class User
             {
                 public const string Name = "user";
-                public const string? Namespace = null;
-                public static string WithId(string id, bool includeNamespace = false) => $"user:{id}";
+                public const string? Namespace = "mynamespace";
+                public static string WithId(string id, bool includeNamespace = false) => includeNamespace ? $"mynamespace/user:{id}" : $"user:{id}";
             }
 
             public static class Document
             {
                 public const string Name = "document";
-                public const string? Namespace = null;
-                public static string WithId(string id, bool includeNamespace = false) => $"document:{id}";
+                public const string? Namespace = "mynamespace";
+                public static string WithId(string id, bool includeNamespace = false) => includeNamespace ? $"mynamespace/document:{id}" : $"document:{id}";
                 public static class Relations
                 {
                     public const string Viewer = "viewer";

@@ -72,13 +72,14 @@ public static class CodeGenerator
     private static ClassDeclarationSyntax CreateDefinition(Definition definition)
     {
         var name = ConstStringField("Name", definition.Name);
-        var withIdMethod = WithIdMethod(definition.Name);
+        var nameSpace = ConstNullableStringField("Namespace", definition.Namespace);
+        var withIdMethod = WithIdMethod(definition.Name, definition.Namespace);
 
         var relations = definition.Relations.Select(RelationField).ToArray();
         var permissions = definition.Permissions.Select(PermissionField).ToArray();
 
         var definitionClass = StaticClass(definition.Name.ToPascalCase())
-            .AddMembers(name, withIdMethod);
+            .AddMembers(name, nameSpace, withIdMethod);
 
         if (relations.Any())
         {
@@ -111,6 +112,22 @@ public static class CodeGenerator
         FieldDeclaration(InitializedStringVariable(name, value))
             .AddModifiers(Public, Const);
 
+    private static MemberDeclarationSyntax ConstNullableStringField(string name, string? value) =>
+        FieldDeclaration(
+                VariableDeclaration(NullableType(StringType))
+                    .AddVariables(
+                        VariableDeclarator(Identifier(name))
+                            .WithInitializer(
+                                EqualsValueClause(
+                                    value is null
+                                        ? LiteralExpression(SyntaxKind.NullLiteralExpression)
+                                        : LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
+                                )
+                            )
+                    )
+            )
+            .AddModifiers(Public, Const);
+
     private static VariableDeclarationSyntax InitializedStringVariable(string name, string value) =>
         VariableDeclaration(StringType)
             .AddVariables(
@@ -120,32 +137,85 @@ public static class CodeGenerator
                             LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
                         )));
 
-    private static MethodDeclarationSyntax WithIdMethod(string resourceName)
+    private static MethodDeclarationSyntax WithIdMethod(string resourceName, string? @namespace)
     {
         const string idParameterIdentifier = "id";
+        const string includeNamespaceParameterIdentifier = "includeNamespace";
+
+        ExpressionSyntax expressionBody = string.IsNullOrWhiteSpace(@namespace)
+            ? ResourceIdInterpolationExpression(resourceName, idParameterIdentifier)
+            : ConditionallyNamespacedResourceIdExpression(resourceName, @namespace!, idParameterIdentifier,
+                includeNamespaceParameterIdentifier);
 
         return MethodDeclaration(StringType, Identifier("WithId"))
             .AddModifiers(Public, Static)
             .AddParameterListParameters(StringParameter(idParameterIdentifier))
+            .AddParameterListParameters(BoolParameter(includeNamespaceParameterIdentifier, false))
             .WithExpressionBody(
-                ArrowExpressionClause(ResourceIdInterpolationExpression(resourceName, idParameterIdentifier))
+                ArrowExpressionClause(expressionBody)
             )
             .WithSemicolonToken(SemiColon);
-    }
 
-    private static InterpolatedStringExpressionSyntax ResourceIdInterpolationExpression(string resourceName,
-        string idIdentifier) =>
-        InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
-            .AddContents(
-                InterpolatedStringText(
-                    Token(
-                        TriviaList(), SyntaxKind.InterpolatedStringTextToken, $"{resourceName}:", "", TriviaList()
-                    )
-                ), Interpolation(IdentifierName(idIdentifier))
-            );
+        static InterpolatedStringExpressionSyntax ResourceIdInterpolationExpression(string resourceName,
+            string idIdentifier) =>
+            InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
+                .AddContents(
+                    InterpolatedStringText(
+                        Token(
+                            TriviaList(), SyntaxKind.InterpolatedStringTextToken, $"{resourceName}:", "", TriviaList()
+                        )
+                    ), Interpolation(IdentifierName(idIdentifier))
+                );
+
+        static ConditionalExpressionSyntax ConditionallyNamespacedResourceIdExpression(string resourceName,
+            string @namespace,
+            string idIdentifier, string includeNamespaceIdentifier) => ConditionalExpression(
+            IdentifierName(includeNamespaceIdentifier),
+            InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
+                .AddContents(
+                    InterpolatedStringText(
+                        Token(
+                            TriviaList(), SyntaxKind.InterpolatedStringTextToken, $"{@namespace}/{resourceName}:", "",
+                            TriviaList()
+                        )
+                    ),
+                    Interpolation(IdentifierName(idIdentifier))
+                ),
+            InterpolatedStringExpression(
+                    Token(SyntaxKind.InterpolatedStringStartToken))
+                .AddContents(
+                    InterpolatedStringText(
+                        Token(
+                            TriviaList(), SyntaxKind.InterpolatedStringTextToken, $"{resourceName}:", "",
+                            TriviaList())
+                    ),
+                    Interpolation(IdentifierName(idIdentifier))
+                )
+        );
+    }
 
     private static ParameterSyntax StringParameter(string identifier) =>
         Parameter(Identifier(identifier)).WithType(StringType);
+
+    private static ParameterSyntax BoolParameter(string identifier, bool? defaultValue)
+    {
+        var parameter = Parameter(Identifier(identifier)).WithType(PredefinedType(Token(SyntaxKind.BoolKeyword)));
+
+        if (defaultValue is not null)
+        {
+            parameter = parameter.WithDefault(
+                EqualsValueClause(
+                    LiteralExpression(
+                        defaultValue.Value
+                            ? SyntaxKind.TrueLiteralExpression
+                            : SyntaxKind.FalseLiteralExpression
+                    )
+                )
+            );
+        }
+
+        return parameter;
+    }
 
     private static PredefinedTypeSyntax StringType => PredefinedType(Token(SyntaxKind.StringKeyword));
 
