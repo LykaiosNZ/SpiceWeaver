@@ -22,15 +22,12 @@ public static class CodeGenerator
         try
         {
             var schema = JsonConvert.DeserializeObject<Schema>(schemaJson);
-            
+
             Debug.Assert(schema is not null);
 
             return Generate(@namespace, className, schema!);
         }
-        catch (JsonException e)
-        {
-            throw new SpiceWeaverException("Error deserializing schema from json", e);
-        }
+        catch (JsonException e) { throw new SpiceWeaverException("Error deserializing schema from json", e); }
     }
 
     public static string Generate(string @namespace, string className, Schema schema)
@@ -53,7 +50,7 @@ public static class CodeGenerator
         {
             throw new ArgumentException("Cannot be null or whitespace", nameof(className));
         }
-        
+
         var syntax = GenerateSyntax(@namespace, className, schema);
 
         syntax.NormalizeWhitespace().WriteTo(writer);
@@ -75,11 +72,13 @@ public static class CodeGenerator
     private static ClassDeclarationSyntax CreateDefinition(Definition definition)
     {
         var name = ConstStringField("Name", definition.Name);
+        var withIdMethod = WithIdMethod(definition.Name);
+
         var relations = definition.Relations.Select(RelationField).ToArray();
         var permissions = definition.Permissions.Select(PermissionField).ToArray();
 
         var definitionClass = StaticClass(definition.Name.ToPascalCase())
-            .AddMembers(name);
+            .AddMembers(name, withIdMethod);
 
         if (relations.Any())
         {
@@ -113,7 +112,7 @@ public static class CodeGenerator
             .AddModifiers(Public, Const);
 
     private static VariableDeclarationSyntax InitializedStringVariable(string name, string value) =>
-        VariableDeclaration(PredefinedType(Token(SyntaxKind.StringKeyword)))
+        VariableDeclaration(StringType)
             .AddVariables(
                 VariableDeclarator(Identifier(name))
                     .WithInitializer(
@@ -121,7 +120,37 @@ public static class CodeGenerator
                             LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
                         )));
 
+    private static MethodDeclarationSyntax WithIdMethod(string resourceName)
+    {
+        const string idParameterIdentifier = "id";
+
+        return MethodDeclaration(StringType, Identifier("WithId"))
+            .AddModifiers(Public, Static)
+            .AddParameterListParameters(StringParameter(idParameterIdentifier))
+            .WithExpressionBody(
+                ArrowExpressionClause(ResourceIdInterpolationExpression(resourceName, idParameterIdentifier))
+            )
+            .WithSemicolonToken(SemiColon);
+    }
+
+    private static InterpolatedStringExpressionSyntax ResourceIdInterpolationExpression(string resourceName,
+        string idIdentifier) =>
+        InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken))
+            .AddContents(
+                InterpolatedStringText(
+                    Token(
+                        TriviaList(), SyntaxKind.InterpolatedStringTextToken, $"{resourceName}:", "", TriviaList()
+                    )
+                ), Interpolation(IdentifierName(idIdentifier))
+            );
+
+    private static ParameterSyntax StringParameter(string identifier) =>
+        Parameter(Identifier(identifier)).WithType(StringType);
+
+    private static PredefinedTypeSyntax StringType => PredefinedType(Token(SyntaxKind.StringKeyword));
+
     private static SyntaxToken Const => Token(SyntaxKind.ConstKeyword);
     private static SyntaxToken Public => Token(SyntaxKind.PublicKeyword);
     private static SyntaxToken Static => Token(SyntaxKind.StaticKeyword);
+    private static SyntaxToken SemiColon => Token(SyntaxKind.SemicolonToken);
 }
