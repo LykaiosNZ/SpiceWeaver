@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace SpiceWeaver;
@@ -21,7 +21,7 @@ public static class CodeGenerator
 
         try
         {
-            var schema = JsonConvert.DeserializeObject<Schema>(schemaJson);
+            var schema = JsonSerializer.Deserialize<Schema>(schemaJson);
 
             Debug.Assert(schema is not null);
 
