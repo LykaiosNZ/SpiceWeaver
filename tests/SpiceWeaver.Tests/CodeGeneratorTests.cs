@@ -54,6 +54,14 @@ public sealed class CodeGeneratorTests
         Snapshot.Match(output);
     }
 
+    [Test]
+    public void GenerateFromJson_WhenDefinitionsIncludeNamespaces_ShouldGenerateExpectedOutput()
+    {
+        var output = CodeGenerator.Generate("TestNameSpace", "TestSchema", TestSchema.WithNamespacesJson);
+        
+        Snapshot.Match(output);
+    }
+
     private static IEnumerable<string?> NullOrWhitespace =>
     [
         null,
